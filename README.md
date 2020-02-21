@@ -44,5 +44,13 @@ Next, from the broadcast ephemeris file, it reads the Klobuchar ionospheric corr
 
 At this point, a file is created in the <b>output/</b> folder that will host all of the observables to perform the velocity calculation. The file naming is <b>output/observables_SITE_DOY_YEAR.txt</b>. The columns of this file are as follows:
 
-<i>index, gps time, gps week, gps second of week, GPS satellite number, x direction cosine, y direction cosine, z direction cosine, L1, L2, azimuth, elevation angle, L1 ionosphere correction, L2 ionosphere correction, Niell slant dry troposphere delay, dx between receiver and satellite, dy between receiver and satellite, dz between receiver and satellite</i>
+<i>index, gps time, gps week, gps second of week, GPS satellite number, x direction cosine, y direction cosine, z direction cosine, L1 (m) with sat clock correction, L2 (m) with sat clock correction, azimuth, elevation angle, L1 ionosphere correction, L2 ionosphere correction, Niell slant dry troposphere delay, dx between receiver and satellite, dy between receiver and satellite, dz between receiver and satellite</i>
+
+While this file is being created, it is finding the proper locations of the satellites at the broadcast time, computing the Niell hydrostatic tropospheric delay, computing the relativistic clock correction, and computing the Klobuchar ionospheric corrections. 
+
+Once the observables file is created, the velocity calculations begin. Starting from the second epoch, it computes the time difference in the satellite locations (from i to i-1) and computes the time difference in the LC combination (2.547 * L1diff - 1.547 * L2diff). L1 and L2 observations are pre-corrected with Klobuchar and slant tropospheric delay values. Every epoch, a new Green's function matrix is created that contains the direction cosines and a single value. A single row looks like
+
+[rx, ry, rz, 1]
+
+where the 1 allows for drifts in the clock bias. It then simply performs a bounded least squares problem where the dLC values are the data vector and we are solving for a vector of dx/dt, dy/dt, dz/dt, dclock/dt. The dxyz values are then converted to dn/dt, de/dt, du/dt and output to the file <b>output/velocities_SITE_DOY_YEAR.txt</b>.
 
