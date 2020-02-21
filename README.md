@@ -64,3 +64,4 @@ it will compute the velocities at the nearest sites during the Mw 7.1 Ridgecrest
 
 ![P595](../master/plots/p595.jpg)
 
+Thats it, there is nothing else to really do, simply change the site list and the dates file and start computing some velocities!
