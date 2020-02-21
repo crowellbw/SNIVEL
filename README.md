@@ -14,7 +14,7 @@ The logic flow is rather simple:
  
 <YEAR> should always be 4 digits.
   
-<DOY> is the day of year, three characters between 001 and 365/366 for leap years. Check the <a hreaf="https://www.ngs.noaa.gov/CORS/Gpscal.shtml">NGS GPS Calendar</a> to determine your DOY.
+<DOY> is the day of year, three characters between 001 and 365/366 for leap years. Check the <a href="https://www.ngs.noaa.gov/CORS/Gpscal.shtml">NGS GPS Calendar</a> to determine your DOY.
   
 <START_TIME> is the time in HR:MN:SC format that you want to start processing. Note that RIENX files use GPS time, so there is currently an 18 second difference between UTC time (GPS-UTC=18) as of Feb 2020.
 
