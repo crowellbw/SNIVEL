@@ -54,3 +54,12 @@ Once the observables file is created, the velocity calculations begin. Starting 
 
 where the 1 allows for drifts in the clock bias. It then simply performs a bounded least squares problem where the dLC values are the data vector and we are solving for a vector of dx/dt, dy/dt, dz/dt, dclock/dt. The dxyz values are then converted to dn/dt, de/dt, du/dt and output to the file <b>output/velocities_SITE_DOY_YEAR.txt</b>.
 
+<b>Example</b>
+
+After you have installed dependencies, if you run this script directly out of the box by typing:
+
+>python3 SNIVEL.py
+
+it will compute the velocities at the nearest sites during the Mw 7.1 Ridgecrest, CA earthquake on July 6, 2019. If you plot the values for station P595, you should get something that looks like:
+
+
