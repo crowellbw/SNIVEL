@@ -62,4 +62,5 @@ After you have installed dependencies, if you run this script directly out of th
 
 it will compute the velocities at the nearest sites during the Mw 7.1 Ridgecrest, CA earthquake on July 6, 2019. If you plot the values for station P595, you should get something that looks like:
 
+![P595](../master/plots/p595.jpg)
 
