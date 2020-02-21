@@ -11,13 +11,13 @@ The logic flow is rather simple:
   
 <b>(2)</b> in the file dates_process.txt, you enter in the dates and times you want to process. There are 4 columns in this file:
 
-<YEAR> <DOY> <START_TIME> <MINUTES>
+<b>YEAR</b> <b>DOY</b> <b>START_TIME</b> <b>MINUTES</b>
  
-<YEAR> should always be 4 digits.
+<b>YEAR</b> should always be 4 digits.
   
-<DOY> is the day of year, three characters between 001 and 365/366 for leap years. Check the <a href="https://www.ngs.noaa.gov/CORS/Gpscal.shtml">NGS GPS Calendar</a> to determine your DOY.
+<b>DOY</b> is the day of year, three characters between 001 and 365/366 for leap years. Check the <a href="https://www.ngs.noaa.gov/CORS/Gpscal.shtml">NGS GPS Calendar</a> to determine your DOY.
   
-<START_TIME> is the time in HR:MN:SC format that you want to start processing. Note that RINEX files use GPS time, so there is currently an 18 second difference between UTC time (GPS-UTC=18) as of Feb 2020.
+<b>START_TIME</b> is the time in HR:MN:SC format that you want to start processing. Note that RINEX files use GPS time, so there is currently an 18 second difference between UTC time (GPS-UTC=18) as of Feb 2020.
 
-<MINUTES> is simply the number of minutes you wish to process. Decimals are allowed here.
+<b>MINUTES</b> is simply the number of minutes you wish to process. Decimals are allowed here.
 
