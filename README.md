@@ -5,7 +5,7 @@ Brendan Crowell
 Pacific Northwest Seismic Network
 University of Washington
 
-This package computes GNSS velocities using the broadcast ephemeris and high-rate RINEX files. This loosely follows the method of <a href="https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010JB007941">Colisimo et al. (2011)</a>. It uses both the L1 and L2 phase observables and inverts for velocity on an epoch by epoch basis with the ionosphere free combination. There is no single frequency mode currently (i.e. <a href="https://pubs.geoscienceworld.org/ssa/srl/article/89/3/1040/530132/Single-Frequency-Instantaneous-GNSS-Velocities">Grapenthin et al. (2018)</a>), however I have tested it using just L1 and it produces almost identical results. 
+This package computes GNSS velocities using the broadcast ephemeris and high-rate RINEX files. This loosely follows the method of <a href="https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010JB007941">Colosimo et al. (2011)</a>. It uses both the L1 and L2 phase observables and inverts for velocity on an epoch by epoch basis with the ionosphere free combination. There is no single frequency mode currently (i.e. <a href="https://pubs.geoscienceworld.org/ssa/srl/article/89/3/1040/530132/Single-Frequency-Instantaneous-GNSS-Velocities">Grapenthin et al. (2018)</a>), however I have tested it using just L1 and it produces almost identical results. 
 
 <b>Dependencies</b>
 
