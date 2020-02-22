@@ -13,6 +13,8 @@ The following python3 packages are required:
 
 georinex, numpy, scipy, and urllib
 
+If you are not using Mac OSX, you may need to get a different version of <a href="https://terras.gsi.go.jp/ja/crx2rnx.html">crx2rnx</a> or <a href="https://www.unavco.org/software/data-processing/teqc/teqc.html">teqc<a/>. 
+
 <b>Running the code</b>
 
 The logic flow is rather simple:
