@@ -63,21 +63,22 @@ with open(sitefile, 'rt') as g:
                         
                         obsfile = 'rinex_hr/' + site + doy + '0.' +  year[-2:] + 'o' #rinex file name
                         navfile = 'nav/brdc' + doy + '0.' +  year[-2:] + 'n' #broadcast navigation file name
-
-                        header=gr.rinexheader(obsfile)#read the RINEX header
-                        (x0,y0,z0)=header['position'] #use the a priori location of the site from the RINEX header. If its really bad, you might want to change it
-                        [latsta,lonsta,altsta]=ecef2lla(float(x0),float(y0),float(z0)) #station lat and lon are needed for klobuchar correction
                         #use teqc to convert the rinex to remove comments within and remove non gps satellites
                         #Also, the -st command sets the start time and +dm is the number of minutes to consider
                         os.system('./teqc -R -E -S -C -J -phc -st ' + st + ' +dm ' + nummin + ' ' + obsfile + ' > example.o') 
-                        os.system('tac example.o | sed -e "/post/{N;d;}" | tac > example2.o') #remove the comment lines that teqc didn't remove
+                        #os.system('tac example.o | sed -e "/post/{N;d;}" | tac > example2.o') #remove the comment lines that teqc didn't remove
+
+
+                        header=gr.rinexheader('example.o')#read the RINEX header
+                        (x0,y0,z0)=header['position'] #use the a priori location of the site from the RINEX header. If its really bad, you might want to change it
+                        [latsta,lonsta,altsta]=ecef2lla(float(x0),float(y0),float(z0)) #station lat and lon are needed for klobuchar correction
 
 
                         nav = gr.load(navfile) #Load the broadcast navigation file
 
                         [alpha,beta]=getklobucharvalues(navfile) #get klobuchar corrections from navigation file
 
-                        obs = gr.load('example2.o') #Load the RINEX file
+                        obs = gr.load('example.o') #Load the RINEX file
 
                         L1 = obs['L1'].values#phase values
                         L2 = obs['L2'].values
