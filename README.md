@@ -9,7 +9,7 @@ This package computes GNSS velocities using the broadcast ephemeris and high-rat
 
 <b>Dependencies</b>
 
-You will need to download <a href="https://terras.gsi.go.jp/ja/crx2rnx.html">crx2rnx</a> and <a href="https://www.unavco.org/software/data-processing/teqc/teqc.html">teqc<a/> and place both in the main working directory where SNIVEL is located. In some distributions of ctx2rnx, the executable is capitalized. Simply rename this file by doing: 
+You will need to download <a href="https://terras.gsi.go.jp/ja/crx2rnx.html">crx2rnx</a> and <a href="https://www.unavco.org/software/data-processing/teqc/teqc.html">teqc<a/> and place both in the main working directory where SNIVEL is located. In some distributions of crx2rnx, the executable is capitalized. Simply rename this file by doing: 
 
 > mv CRX2RNX > crx2rnx
  
