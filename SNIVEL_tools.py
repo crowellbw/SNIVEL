@@ -332,5 +332,88 @@ def dxyz2dneu(dx,dy,dz,lat,lon):
 	du = numpy.cos(lat)*numpy.cos(lon)*dx+numpy.cos(lat)*numpy.sin(lon)*dy+numpy.sin(lat)*dz
 	return (dn, de, du)
 
-    
+#this computes the niell wet delay mapping function
+def niell_wet(elev, lat):
+
+    aavg15 = 5.8021897e-4
+    bavg15 = 1.4275268e-3
+    cavg15 = 4.3472961e-2
+
+    aavg30 = 5.6794847e-4
+    bavg30 = 1.5138625e-3
+    cavg30 = 4.6729510e-2
+
+    aavg45 = 5.8118019e-4
+    bavg45 = 1.4572752e-3
+    cavg45 = 4.3908931e-2
+
+    aavg60 = 5.9727542e-4
+    bavg60 = 1.5007428e-3
+    cavg60 = 4.4626982e-2
+
+    aavg75 = 6.1641693e-4
+    bavg75 = 1.7599082e-3
+    cavg75 = 5.4736038e-2
+
+    if (abs(lat) <= 15):
+        aavg = aavg15
+        bavg = bavg15
+        cavg = cavg15
+
+    if (abs(lat) > 15 and abs(lat) <= 30):
+        amavg = 15.0/(aavg30-aavg15)
+        aavg = (abs(lat) - 15)/amavg + aavg15
+
+        bmavg = 15.0/(bavg30-bavg15)
+        bavg = (abs(lat) - 15)/bmavg + bavg15
+
+        cmavg = 15.0/(cavg30-cavg15)
+        cavg = (abs(lat) - 15)/cmavg + cavg15
+
+    if (abs(lat) > 30 and abs(lat) <= 45):
+        amavg = 15.0/(aavg45-aavg30)
+        aavg = (abs(lat) - 30)/amavg + aavg30
+
+        bmavg = 15.0/(bavg45-bavg30)
+        bavg = (abs(lat) - 30)/bmavg + bavg30
+
+        cmavg = 15.0/(cavg45-cavg30)
+        cavg = (abs(lat) - 30)/cmavg + cavg30
+
+    if (abs(lat) > 45 and abs(lat) <= 60):
+        amavg = 15.0/(aavg60-aavg45)
+        aavg = (abs(lat) - 45)/amavg + aavg45
+
+        bmavg = 15.0/(bavg60-bavg45)
+        bavg = (abs(lat) - 45)/bmavg + bavg45
+
+        cmavg = 15.0/(cavg60-cavg45)
+        cavg = (abs(lat) - 45)/cmavg + cavg45
+
+    if (abs(lat) > 60 and abs(lat) <= 75):
+        amavg = 15.0/(aavg75-aavg60)
+        aavg = (abs(lat) - 60)/amavg + aavg60
+
+        bmavg = 15.0/(bavg75-bavg60)
+        bavg = (abs(lat) - 60)/bmavg + bavg60
+
+        cmavg = 15.0/(cavg75-cavg60)
+        cavg = (abs(lat) - 60)/cmavg + cavg60
+
+    if (abs(lat) > 75):
+        aavg = aavg75
+        bavg = bavg75
+        cavg = cavg75
+
+    a = aavg
+    b = bavg
+    c = cavg
+
+    el = math.sin(elev*math.pi/180)
+
+    m = (1 + a/(1+b/(1+c)))/(el + a/(el+b/(el+c)))
+
+    Mwet = m
+
+    return(Mwet)
     
