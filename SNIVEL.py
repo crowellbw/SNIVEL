@@ -72,7 +72,6 @@ with open(sitefile, 'rt') as g:
                             (x0,y0,z0)=header['position'] #use the a priori location of the site from the RINEX header. If its really bad, you might want to change it
                             samfreq = header['interval'] #interval between observations
                             sampersec = int(1/float(samfreq)) #sampling rate
-                            print (sampersec)
                             [latsta,lonsta,altsta]=ecef2lla(float(x0),float(y0),float(z0)) #station lat and lon are needed for klobuchar correction
 
                             nav = gr.load(navfile) #Load the broadcast navigation file
