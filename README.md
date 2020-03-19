@@ -49,11 +49,11 @@ Georinex will then read the RINEX header to determine the a priori position of t
 
 After this, the RINEX file is trimmed to remove non-GPS satellites and to the START_TIME and MINUTES specified in the dates_process.txt file. In subsequent versions, I will add capabilities for GLONASS, Galileo and Beidou, but for now, GPS is sufficient. 
 
-Next, from the broadcast ephemeris file, it reads the Klobuchar ionospheric corrections. This isn't really necessary, but I already had the script and it doesn't hurt. 
+Next, from the broadcast ephemeris file, it reads the Klobuchar ionospheric corrections. 
 
 At this point, a file is created in the <b>output/</b> folder that will host all of the observables to perform the velocity calculation. The file naming is <b>output/observables_SITE_DOY_YEAR.txt</b>. The columns of this file are as follows:
 
-<i>index, gps time, gps week, gps second of week, GPS satellite number, x direction cosine, y direction cosine, z direction cosine, L1 (m) with sat clock correction, L2 (m) with sat clock correction, azimuth, elevation angle, L1 ionosphere correction, L2 ionosphere correction, Niell slant dry troposphere delay, dx between receiver and satellite, dy between receiver and satellite, dz between receiver and satellite</i>
+<i>index, gps time, gps week, gps second of week, GPS satellite number, x direction cosine, y direction cosine, z direction cosine, L1 (m) with sat clock correction, L2 (m) with sat clock correction, azimuth, elevation angle, L1 ionosphere correction, L2 ionosphere correction, Niell slant dry troposphere delay, dx between receiver and satellite, dy between receiver and satellite, dz between receiver and satellite, Niell wet tropospheric delay mapping function</i>
 
 While this file is being created, it is finding the proper locations of the satellites at the broadcast time, computing the Niell hydrostatic tropospheric delay, computing the relativistic clock correction, and computing the Klobuchar ionospheric corrections. 
 
