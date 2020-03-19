@@ -57,7 +57,7 @@ At this point, a file is created in the <b>output/</b> folder that will host all
 
 While this file is being created, it is finding the proper locations of the satellites at the broadcast time, computing the Niell hydrostatic tropospheric delay, computing the relativistic clock correction, and computing the Klobuchar ionospheric corrections. 
 
-Once the observables file is created, the velocity calculations begin. Starting from the second epoch, it computes the time difference in the satellite locations (from i to i-1) and computes the time difference in the LC combination (2.547 * L1diff - 1.547 * L2diff). L1 and L2 observations are pre-corrected with Klobuchar and slant tropospheric delay values. Every epoch, a new Green's function matrix is created that contains the direction cosines and a single value. A single row looks like
+Once the observables file is created, the velocity calculations begin. Starting from the second epoch, it computes the time difference in the satellite locations (from i to i-1) and computes the time difference in the narrow-lane combination. L1 and L2 observations are pre-corrected with Klobuchar and slant tropospheric delay values. Every epoch, a new Green's function matrix is created that contains the direction cosines and a single value. A single row looks like
 
 [rx, ry, rz, 1]
 
