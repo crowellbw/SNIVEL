@@ -112,8 +112,8 @@ def azi_elev(xsta,ysta,zsta,xsat,ysat,zsat):
 
 def getklobucharvalues(navfile):
     navhead = gr.rinexheader(navfile) #load navigation header to obtain klobuchar
-    alpha = navhead['ION ALPHA           \n'] #klobuchar alphas
-    beta = navhead['ION BETA            \n'] #klobuchar betas
+    alpha = navhead['ION ALPHA'] #klobuchar alphas
+    beta = navhead['ION BETA'] #klobuchar betas
     alpha2 = alpha.replace("D", "E") #nav headers sometimes use D instead of E for power
     beta2 = beta.replace("D", "E")
     alp1= numpy.asarray(alpha2.split())
