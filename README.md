@@ -19,6 +19,10 @@ georinex, numpy, scipy, and urllib
 
 You should be able to get all of these through pip, brew, or conda depending on your Python install. 
 
+One complexity with georinex is that it is not available through conda directly. You need to install pip on conda and then install georinex by calling the anaconda version of pip3 such that
+
+> /path/to/anaconda/bin/pip3 install georinex
+
 <b>Running the code</b>
 
 The logic flow is rather simple:
