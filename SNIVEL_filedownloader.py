@@ -26,8 +26,12 @@ def getbcorbit(year, doy):
     if (os.path.isfile(fname2) == True):
         print ('Navigation file ' + fname2 + ' already exists')
     else:
-        url = 'ftp://cddis.nasa.gov/gnss/data/daily/' + year + '/' + doy + '/' + year[-2:] + 'n/brdc' + doy + '0.' +  year[-2:] + 'n.Z'
-        wget.download(url, out='nav/')
+        #url = 'ftp://cddis.nasa.gov/gnss/data/daily/' + year + '/' + doy + '/' + year[-2:] + 'n/brdc' + doy + '0.' +  year[-2:] + 'n.Z'
+        #url = 'https://cddis.nasa.gov/archive/gnss/data/daily/' + year + '/' + doy + '/' + year[-2:] + 'n/brdc' + doy + '0.' +  year[-2:] + 'n.Z'        
+        url = 'ftps://gdc.cddis.eosdis.nasa.gov/gnss/data/daily/' + year + '/' + doy + '/' + year[-2:] + 'n/brdc' + doy + '0.' +  year[-2:] + 'n.Z'
+        os.system('wget -O ' + fname + ' --ftp-user anonymous --ftp-password snivel@uw.edu ' + url)
+        #wget.download(url, out='nav/')
+        #os.system('wget -O ' + fname + ' --auth-no-challenge ' + url)
         os.system('gunzip' + ' ' + fname)
 
 #This subroutine downloads the any sp3 file for a given day from CDDIS
