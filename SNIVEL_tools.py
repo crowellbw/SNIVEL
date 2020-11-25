@@ -4,6 +4,8 @@ import datetime
 import calendar
 import math
 import georinex as gr
+import obspy
+from obspy.io.sac import SACTrace
 #####################################################################################
 #SNIVEL_tools.py
 #Written by Brendan Crowell, University of Washington
@@ -37,6 +39,13 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
 def month_converter(month):
     months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
     return months.index(month) + 1
+
+def gpsleapsec(gpssec):
+    leaptimes = numpy.array([46828800, 78364801, 109900802, 173059203, 252028804, 315187205, 346723206, 393984007, 425520008, 457056009, 504489610, 551750411, 599184012, 820108813, 914803214, 1025136015, 1119744016, 1167264017])
+    leapseconds = numpy.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18])
+    a1 = numpy.where(gpssec > leaptimes)[0]
+    leapsec = len(a1)
+    return(leapsec)
 
 def doy2month(doy,year):
     isleap = calendar.isleap(year)
@@ -417,3 +426,47 @@ def niell_wet(elev, lat):
 
     return(Mwet)
     
+def writesac(velfile,site,stalat,stalon,doy,year,samprate,event):
+    a = numpy.loadtxt(velfile)
+    tind = a[:,0]
+    gtime = a[:,1]
+    leapsec = gpsleapsec(gtime[0])
+    
+    #Get the start time of the file in UTC
+    date = datetime.datetime(int(year), 1, 1) + datetime.timedelta(int(doy) - 1)
+    gpstime = (numpy.datetime64(date) - numpy.datetime64('1980-01-06T00:00:00'))/ numpy.timedelta64(1, 's')
+    stime = (gtime[0]-leapsec)*numpy.timedelta64(1, 's')+ numpy.datetime64('1980-01-06T00:00:00')
+    sitem = stime.item()
+    print(sitem)
+    styr = sitem.year
+    stdy = sitem.day
+    stmon = sitem.month
+    sthr = sitem.hour
+    stmin = sitem.minute
+    stsec = sitem.second
+
+    
+    nv = a[:,2]
+    ev = a[:,3]
+    uv = a[:,4]
+    print('Writing SAC file ' + 'output/' + site + '.LXN.sac')
+    headN = {'kstnm': site, 'kcmpnm': 'LXN', 'stla': float(stalat),'stlo': float(stalon),
+             'nzyear': int(year), 'nzjday': int(doy), 'nzhour': int(sthr), 'nzmin': int(stmin),
+             'nzsec': int(stsec), 'nzmsec': int(0), 'delta': float(samprate)}
+
+    sacn = SACTrace(data=nv, **headN)
+    sacn.write('output/' + site.upper() + '.vel.n')
+    print('Writing SAC file ' + 'output/' + site + '.LXE.sac')
+
+    headE = {'kstnm': site, 'kcmpnm': 'LXE', 'stla': float(stalat),'stlo': float(stalon),
+         'nzyear': int(year), 'nzjday': int(doy), 'nzhour': int(sthr), 'nzmin': int(stmin),
+         'nzsec': int(stsec), 'nzmsec': int(0), 'delta': float(samprate)}
+    sace = SACTrace(data=ev, **headE)
+    sace.write('output/' + site.upper() + '.vel.e')
+    print('Writing SAC file ' + 'output/' + site + '.LXZ.sac')
+
+    headZ = {'kstnm': site, 'kcmpnm': 'LXZ', 'stla': float(stalat),'stlo': float(stalon),
+             'nzyear': int(year), 'nzjday': int(doy), 'nzhour': int(sthr), 'nzmin': int(stmin),
+             'nzsec': int(stsec), 'nzmsec': int(0), 'delta': float(samprate)}
+    sacu = SACTrace(data=uv, **headZ)
+    sacu.write('output/' + site.upper() + '.vel.u')
