@@ -8,7 +8,7 @@ import SNIVEL_tools
 #This code will download any RINEX, nav or UNR
 #time series file requested
 #Written by Brendan Crowell, University of Washington
-#Last edited February 18, 2020
+#Last edited January 8, 2021
 #Broadcast navigation messages are only downloaded from CDDIS
 #RINEX files will try to download from UNAVCO, then CWU, then CDDIS, then SOPAC
 #Time Series files will only download from UNR, cartesian positions
