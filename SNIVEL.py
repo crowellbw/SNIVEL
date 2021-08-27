@@ -6,6 +6,7 @@ import SNIVEL_orbits
 import datetime
 from SNIVEL_filedownloader import getbcorbit, getrinexhr
 from SNIVEL_tools import azi_elev, klobuchar, ecef2lla, gpsweekdow, getklobucharvalues, niell, dxyz2dneu, printProgressBar, niell_wet
+from SNIVEL_tools import writesac
 import os
 from scipy.optimize import lsq_linear
 #####################################################################################
@@ -17,15 +18,18 @@ from scipy.optimize import lsq_linear
 #Input files of testing sites and testing dates is required, the format is rather simple
 #Follow the examples provided
 #####################################################################################
+event='pig'
 c = 299792458.0 #speed of light
 fL1 = 1575.42e6 #L1 frequency
 fL2 = 1227.60e6 #L2 frequency
 wL1 = c/fL1 #L1 wavelength
 wL2 = c/fL2 #L2 wavelength
-sitefile='sites_process.txt'
-datefile='dates_process.txt'
+sitefile='sites_'+event+'.txt'
+datefile='dates_'+event+'.txt'
 #sampersec=1 #samples per second...this is now pulled from header
 elevmask = 7 #elevation mask
+clockdrift= 1e-7 #maximum clock drift rate
+maxvel = 1 #the maximum velocity between samples. If 1 Hz, 1 == 1 m/s. At 5 Hz, 1 = 5 m/s
 #####################################################################################
 ##Preprocessing
 #This section reads in the RINEX, apriori locations and orbit files and forms an
@@ -46,7 +50,7 @@ with open(sitefile, 'rt') as g:
                         doy = grow2[1]
                         st = grow2[2]
                         nummin = grow2[3]
-                        print('Processing station ', site, ' on year and  day ', year,  doy)
+                        #print('Processing station ', site, ' on year and  day ', year,  doy)
                         if not os.path.exists('output'): #if output folder doesn't exist, make it
                             os.makedirs('output')
                         outfile = 'output/observables_' + site + '_' + doy + '_' + year + '.txt'
@@ -67,13 +71,13 @@ with open(sitefile, 'rt') as g:
                             #Also, the -st command sets the start time and +dm is the number of minutes to consider
                             os.system('./teqc -R -E -S -C -J -phc -st ' + st + ' +dm ' + nummin + ' ' + obsfile + ' > example.o')
                             #os.system('tac example.o | sed -e "/post/{N;d;}" | tac > example2.o') #remove the comment lines that teqc didn't remove
-
                             header=gr.rinexheader('example.o')#read the RINEX header
                             (x0,y0,z0)=header['position'] #use the a priori location of the site from the RINEX header. If its really bad, you might want to change it
                             samfreq = header['interval'] #interval between observations
                             sampersec = int(1/float(samfreq)) #sampling rate
+                            sampersec = 1/float(samfreq)
                             [latsta,lonsta,altsta]=ecef2lla(float(x0),float(y0),float(z0)) #station lat and lon are needed for klobuchar correction
-
+                            print (site, latsta*180/math.pi, lonsta*180/math.pi, altsta)
                             nav = gr.load(navfile) #Load the broadcast navigation file
                             [alpha,beta]=getklobucharvalues(navfile) #get klobuchar corrections from navigation file
 
@@ -81,7 +85,8 @@ with open(sitefile, 'rt') as g:
 
                             L1 = obs['L1'].values#phase values
                             L2 = obs['L2'].values
-
+                            S1 = obs['S1'].values
+                            S2 = obs['S2'].values
 
                             obs_time = obs.time.values #observation times
                             nt = len(obs_time) #number of observation times
@@ -115,7 +120,7 @@ with open(sitefile, 'rt') as g:
                                             di1 = "{0:.5f}".format(dIon1) #Klobuchar ionospheric delay on L1
                                             di2 = "{0:.5f}".format(dIon2) #Klobuchar ionospheric delat on L2
                                             shd = "{0:.5f}".format(Mdry) #Niell slant hydrostatic delay
-                                            swd = "{0:.5f}".format(Mwet) #Niell slant hydrostatic delay
+                                            swd = "{0:.5f}".format(Mwet) #Niell slant wet delay
                                             gpst = "{0:.2f}".format(float(gps_time)) #gps time, continuous seconds since Jan 6, 1980
                                             gpsw = "{0:.0f}".format(float(gpsweek)) #gps week
                                             gpss = "{0:.2f}".format(float(gps_sow)) #gps second of week
@@ -123,8 +128,9 @@ with open(sitefile, 'rt') as g:
                                             dxsat = "{0:.6f}".format(float((x0-x))) #distance between receiver and satellite in x
                                             dysat = "{0:.6f}".format(float((y0-y))) #distance between receiver and satellite in y
                                             dzsat = "{0:.6f}".format(float((z0-z))) #distance between receiver and satellite in z
-
-                                            ffo.write(str(i)+' '+gpst+' '+gpsw+' '+gpss+' '+svstrip+' '+rx0+' '+ry0+' '+rz0+' '+l1+' '+l2+' '+az+' '+el+' '+di1+' '+di2+' '+shd+' '+dxsat+' '+dysat+' '+dzsat+' '+swd+'\n')
+                                            s1 = "{0:.2f}".format(float(S1[i,j]))
+                                            s2 = "{0:.2f}".format(float(S2[i,j]))
+                                            ffo.write(str(i)+' '+gpst+' '+gpsw+' '+gpss+' '+svstrip+' '+rx0+' '+ry0+' '+rz0+' '+l1+' '+l2+' '+az+' '+el+' '+di1+' '+di2+' '+shd+' '+dxsat+' '+dysat+' '+dzsat+' '+swd+' '+s1+' '+s2+'\n')
 
                             ffo.close()
                             #####################################################################################
@@ -146,23 +152,22 @@ with open(sitefile, 'rt') as g:
                             rz = a[:,7]
                             l1 = a[:,8]+i1corr-shdcorr
                             l2 = a[:,9]+i2corr-shdcorr
-
+                            #l1 = a[:,8]
+                            #l2 = a[:,9]
                             el = a[:,11]
                             dxsat = a[:,15]
                             dysat = a[:,16]
                             dzsat = a[:,17]
                             ub = numpy.zeros([1,4])
                             lb = numpy.zeros([1,4])
-                            ub[0,0] = 1.2
-                            lb[0,0] = -1.2
-                            ub[0,1] = 1.2
-                            lb[0,1] = -1.2
-                            ub[0,2] = 1.2
-                            lb[0,2] = -1.2
-                            ub[0,3] = 1e-8*c
-                            lb[0,3] = -1e-8*c
-
-
+                            ub[0,0] = maxvel
+                            lb[0,0] = -maxvel
+                            ub[0,1] = maxvel
+                            lb[0,1] = -maxvel
+                            ub[0,2] = maxvel
+                            lb[0,2] = -maxvel
+                            ub[0,3] = clockdrift*c
+                            lb[0,3] = -clockdrift*c
 
                             tstart = numpy.amin(tind)+1
                             tstop = numpy.amax(tind)
@@ -202,8 +207,8 @@ with open(sitefile, 'rt') as g:
                                             dran = dran1-dran0
                                             l1diff = l11[j]-l10[int(asv)]-dran
                                             l2diff = l21[j]-l20[int(asv)]-dran
-                                            nl = [fL1/(fL1+fL2)*l1diff + fL2/(fL1+fL2)*l2diff] #narrow lane, used as observation
-                                            lc = [2.5457*l1diff-1.5457*l2diff] #LC...not used now
+                                            nl = [fL1/(fL1+fL2)*l1diff + fL2/(fL1+fL2)*l2diff]
+                                            varvalL = [nl] #variometric value
                                             Grow = [rx1[j], ry1[j], rz1[j], 1] #row of Green's function
                                             Wrow = [el1[j]]
                                             W.append(Wrow)
@@ -218,7 +223,6 @@ with open(sitefile, 'rt') as g:
                                     WV = numpy.matmul(numpy.matmul(numpy.transpose(Ginv),Winv),Vinv)
                                     GWGT = numpy.matmul(numpy.transpose(Ginv),numpy.matmul(Winv,Ginv))
                                     S = lsq_linear(GWGT, WV.flatten(), bounds=(lb.flatten(), ub.flatten()), lsmr_tol='auto')
-
                                     [dn,de,du]=dxyz2dneu(S.x[0],S.x[1],S.x[2],latsta*180/math.pi,lonsta*180/math.pi)
                                     gpst = "{0:.2f}".format(float(gtime[a1[0]]))
                                     nvel = "{0:.5f}".format(float(dn)*sampersec)
@@ -227,6 +231,7 @@ with open(sitefile, 'rt') as g:
                                     ffo.write(str(i)+' '+gpst+' '+nvel+' '+evel+' '+uvel+'\n')
 
                             ffo.close()
+                            writesac(veloutfile, site, latsta*180/math.pi, lonsta*180/math.pi, doy, year, 1/sampersec, event)
                             print ('Station ', site, ' complete')
                         except Exception:
                             print ('Station ', site, ' not available on date ', str(year), ' ', str(doy))
