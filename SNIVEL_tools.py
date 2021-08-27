@@ -40,13 +40,6 @@ def month_converter(month):
     months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
     return months.index(month) + 1
 
-def gpsleapsec(gpssec):
-    leaptimes = numpy.array([46828800, 78364801, 109900802, 173059203, 252028804, 315187205, 346723206, 393984007, 425520008, 457056009, 504489610, 551750411, 599184012, 820108813, 914803214, 1025136015, 1119744016, 1167264017])
-    leapseconds = numpy.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18])
-    a1 = numpy.where(gpssec > leaptimes)[0]
-    leapsec = len(a1)
-    return(leapsec)
-
 def doy2month(doy,year):
     isleap = calendar.isleap(year)
     if str(isleap) == 'True':
@@ -81,7 +74,12 @@ def gpsweekdow(year,doy):
     gpsdow = math.floor((gpstime-gpsweek*604800)/86400)                   
     return(gpsweek, gpsdow)
 
-
+def gpsleapsec(gpssec):
+    leaptimes = numpy.array([46828800, 78364801, 109900802, 173059203, 252028804, 315187205, 346723206, 393984007, 425520008, 457056009, 504489610, 551750411, 599184012, 820108813, 914803214, 1025136015, 1119744016, 1167264017])
+    leapseconds = numpy.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18])
+    a1 = numpy.where(gpssec > leaptimes)[0]
+    leapsec = len(a1)
+    return(leapsec)
 
 def ecef2lla(x,y,z):
     a = 6378137
@@ -341,7 +339,7 @@ def dxyz2dneu(dx,dy,dz,lat,lon):
 	du = numpy.cos(lat)*numpy.cos(lon)*dx+numpy.cos(lat)*numpy.sin(lon)*dy+numpy.sin(lat)*dz
 	return (dn, de, du)
 
-#this computes the niell wet delay mapping function
+
 def niell_wet(elev, lat):
 
     aavg15 = 5.8021897e-4
@@ -425,7 +423,7 @@ def niell_wet(elev, lat):
     Mwet = m
 
     return(Mwet)
-    
+
 def writesac(velfile,site,stalat,stalon,doy,year,samprate,event):
     a = numpy.loadtxt(velfile)
     tind = a[:,0]
@@ -449,24 +447,25 @@ def writesac(velfile,site,stalat,stalon,doy,year,samprate,event):
     nv = a[:,2]
     ev = a[:,3]
     uv = a[:,4]
-    print('Writing SAC file ' + 'output/' + site + '.LXN.sac')
+    sr = "{0:.2f}".format(float(samprate))
+    print('Writing SAC file ' + 'output/' + event + '.' + site + '.' + sr + '.LXN.sac')
     headN = {'kstnm': site, 'kcmpnm': 'LXN', 'stla': float(stalat),'stlo': float(stalon),
              'nzyear': int(year), 'nzjday': int(doy), 'nzhour': int(sthr), 'nzmin': int(stmin),
              'nzsec': int(stsec), 'nzmsec': int(0), 'delta': float(samprate)}
 
     sacn = SACTrace(data=nv, **headN)
-    sacn.write('output/' + site.upper() + '.vel.n')
-    print('Writing SAC file ' + 'output/' + site + '.LXE.sac')
+    sacn.write('output/' + event + '.' + site.upper() + '.' + sr + '.LXN.sac')
+    print('Writing SAC file ' + 'output/' + event + '.' + site + '.' + sr + '.LXE.sac')
 
     headE = {'kstnm': site, 'kcmpnm': 'LXE', 'stla': float(stalat),'stlo': float(stalon),
          'nzyear': int(year), 'nzjday': int(doy), 'nzhour': int(sthr), 'nzmin': int(stmin),
          'nzsec': int(stsec), 'nzmsec': int(0), 'delta': float(samprate)}
     sace = SACTrace(data=ev, **headE)
-    sace.write('output/' + site.upper() + '.vel.e')
-    print('Writing SAC file ' + 'output/' + site + '.LXZ.sac')
+    sace.write('output/' + event + '.' + site.upper() + '.' + sr + '.LXE.sac')
+    print('Writing SAC file ' + 'output/' + event + '.' + site + '.' + sr + '.LXZ.sac')
 
     headZ = {'kstnm': site, 'kcmpnm': 'LXZ', 'stla': float(stalat),'stlo': float(stalon),
              'nzyear': int(year), 'nzjday': int(doy), 'nzhour': int(sthr), 'nzmin': int(stmin),
              'nzsec': int(stsec), 'nzmsec': int(0), 'delta': float(samprate)}
     sacu = SACTrace(data=uv, **headZ)
-    sacu.write('output/' + site.upper() + '.vel.u')
+    sacu.write('output/' + event + '.' + site.upper() + '.' + sr + '.LXZ.sac')
