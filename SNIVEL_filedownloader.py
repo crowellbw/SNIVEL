@@ -162,7 +162,7 @@ def getrinexhr(site, year, doy):
         print ('Rinex file ' + fnameo + ' already exists')
     else:
         try:
-            url = 'ftp://data-out.unavco.org/pub/highrate/1-Hz/rinex/' + year + '/' + doy + '/' + site + '/' + site + doy + '0.' +  year[-2:] + 'd.Z'
+            url = 'https://data.unavco.org/archive/gnss/highrate/1-Hz/rinex/' + year + '/' + doy + '/' + site + '/' + site + doy + '0.' +  year[-2:] + 'd.Z'
             print ('Attempting to download ' + fnamed + ' from UNAVCO')
             wget.download(url, out='rinex_hr/')
             os.system('gunzip' + ' ' + fnameZ)
