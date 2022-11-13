@@ -3,6 +3,7 @@ import wget
 import os
 import urllib
 import SNIVEL_tools
+from ftplib import FTP_TLS
 #####################################################################################
 #SNIVEL_filedownloader.py
 #This code will download any RINEX, nav or UNR
