@@ -28,16 +28,28 @@ def getbcorbit(year, doy):
         print ('Navigation file ' + fname2 + ' already exists')
     else:
         if (int(year) > 2020):
-            url = 'ftps://gdc.cddis.eosdis.nasa.gov/gnss/data/daily/' + year + '/' + doy + '/' + year[-2:] + 'n/brdc' + doy + '0.' +  year[-2:] + 'n.gz'
-            os.system('wget -O ' + fnamegz + ' --ftp-user anonymous --ftp-password snivel@uw.edu ' + url)
+            ftps = FTP_TLS(host = 'gdc.cddis.eosdis.nasa.gov')
+            ftps.login(user='anonymous', passwd='snivel@uw.edu')
+            ftps.prot_p()
+            ftps.cwd('gnss/data/daily/' + year + '/' + doy + '/' + year[-2:] + 'n/')
+            ftps.retrbinary("RETR " + 'brdc' + doy + '0.' +  year[-2:] + 'n.gz', open('brdc' + doy + '0.' +  year[-2:] + 'n.gz', 'wb').write)
+            os.system('mv '+ 'brdc' + doy + '0.' +  year[-2:] + 'n.gz  nav')
             os.system('gunzip' + ' ' + fnamegz)
         elif (int(year) == 2020 and int(doy) >334):
-            url = 'ftps://gdc.cddis.eosdis.nasa.gov/gnss/data/daily/' + year + '/' + doy + '/' + year[-2:] + 'n/brdc' + doy + '0.' +  year[-2:] + 'n.gz'
-            os.system('wget -O ' + fnamegz + ' --ftp-user anonymous --ftp-password snivel@uw.edu ' + url)
+            ftps = FTP_TLS(host = 'gdc.cddis.eosdis.nasa.gov')
+            ftps.login(user='anonymous', passwd='snivel@uw.edu')
+            ftps.prot_p()
+            ftps.cwd('gnss/data/daily/' + year + '/' + doy + '/' + year[-2:] + 'n/')
+            ftps.retrbinary("RETR " + 'brdc' + doy + '0.' +  year[-2:] + 'n.gz', open('brdc' + doy + '0.' +  year[-2:] + 'n.gz', 'wb').write)
+            os.system('mv '+ 'brdc' + doy + '0.' +  year[-2:] + 'n.gz  nav')
             os.system('gunzip' + ' ' + fnamegz)
         else:
-            url = 'ftps://gdc.cddis.eosdis.nasa.gov/gnss/data/daily/' + year + '/' + doy + '/' + year[-2:] + 'n/brdc' + doy + '0.' +  year[-2:] + 'n.Z'
-            os.system('wget -O ' + fnameZ + ' --ftp-user anonymous --ftp-password snivel@uw.edu ' + url)
+            ftps = FTP_TLS(host = 'gdc.cddis.eosdis.nasa.gov')
+            ftps.login(user='anonymous', passwd='snivel@uw.edu')
+            ftps.prot_p()
+            ftps.cwd('gnss/data/daily/' + year + '/' + doy + '/' + year[-2:] + 'n/')
+            ftps.retrbinary("RETR " + 'brdc' + doy + '0.' +  year[-2:] + 'n.Z', open('brdc' + doy + '0.' +  year[-2:] + 'n.Z', 'wb').write)
+            os.system('mv '+ 'brdc' + doy + '0.' +  year[-2:] + 'n.Z nav')
             os.system('gunzip' + ' ' + fnameZ)
 
 #This subroutine downloads the any sp3 file for a given day from CDDIS
