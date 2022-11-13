@@ -5,6 +5,9 @@ import calendar
 import math
 import georinex as gr
 import obspy
+import scipy
+import matplotlib.pyplot as plt
+from scipy.signal import butter, lfilter, filtfilt
 from obspy.io.sac import SACTrace
 #####################################################################################
 #SNIVEL_tools.py
@@ -15,7 +18,7 @@ c = 299792458.0 #speed of light
 fL1 = 1575.42e6 #L1 frequency
 fL2 = 1227.60e6 #L2 frequency
 # Print iterations progress
-def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = 'â–ˆ', printEnd = "\r"):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -39,13 +42,6 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
 def month_converter(month):
     months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
     return months.index(month) + 1
-
-def gpsleapsec(gpssec):
-    leaptimes = numpy.array([46828800, 78364801, 109900802, 173059203, 252028804, 315187205, 346723206, 393984007, 425520008, 457056009, 504489610, 551750411, 599184012, 820108813, 914803214, 1025136015, 1119744016, 1167264017])
-    leapseconds = numpy.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18])
-    a1 = numpy.where(gpssec > leaptimes)[0]
-    leapsec = len(a1)
-    return(leapsec)
 
 def doy2month(doy,year):
     isleap = calendar.isleap(year)
@@ -81,7 +77,12 @@ def gpsweekdow(year,doy):
     gpsdow = math.floor((gpstime-gpsweek*604800)/86400)                   
     return(gpsweek, gpsdow)
 
-
+def gpsleapsec(gpssec):
+    leaptimes = numpy.array([46828800, 78364801, 109900802, 173059203, 252028804, 315187205, 346723206, 393984007, 425520008, 457056009, 504489610, 551750411, 599184012, 820108813, 914803214, 1025136015, 1119744016, 1167264017])
+    leapseconds = numpy.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18])
+    a1 = numpy.where(gpssec > leaptimes)[0]
+    leapsec = len(a1)
+    return(leapsec)
 
 def ecef2lla(x,y,z):
     a = 6378137
@@ -341,7 +342,7 @@ def dxyz2dneu(dx,dy,dz,lat,lon):
 	du = numpy.cos(lat)*numpy.cos(lon)*dx+numpy.cos(lat)*numpy.sin(lon)*dy+numpy.sin(lat)*dz
 	return (dn, de, du)
 
-#this computes the niell wet delay mapping function
+
 def niell_wet(elev, lat):
 
     aavg15 = 5.8021897e-4
@@ -425,7 +426,7 @@ def niell_wet(elev, lat):
     Mwet = m
 
     return(Mwet)
-    
+
 def writesac(velfile,site,stalat,stalon,doy,year,samprate,event):
     a = numpy.loadtxt(velfile)
     tind = a[:,0]
@@ -444,29 +445,85 @@ def writesac(velfile,site,stalat,stalon,doy,year,samprate,event):
     sthr = sitem.hour
     stmin = sitem.minute
     stsec = sitem.second
-
     
-    nv = a[:,2]
-    ev = a[:,3]
-    uv = a[:,4]
-    print('Writing SAC file ' + 'output/' + site + '.LXN.sac')
+    nunf = a[:,2]-numpy.nanmean(a[:,2])
+    eunf = a[:,3]-numpy.nanmean(a[:,3])
+    uunf = a[:,4]-numpy.nanmean(a[:,4])
+    t = gtime-gtime[0]
+    print(samprate)
+    samplerate = float(samprate)
+    bf, af = butter(4, 1/4/samplerate/0.5*samplerate,btype='low')
+    print(1/4/samplerate/0.5*samplerate)
+    nv = filtfilt(bf,af,nunf)
+    ev = filtfilt(bf,af,eunf)
+    uv = filtfilt(bf,af,uunf)
+    plotvelocities(event,site,t,nunf*100,eunf*100,uunf*100)
+    sr = "{0:.2f}".format(float(samprate))
+    print('Writing SAC file ' + 'output/' + event + '.' + site + '.' + sr + '.LXN.sac')
     headN = {'kstnm': site, 'kcmpnm': 'LXN', 'stla': float(stalat),'stlo': float(stalon),
              'nzyear': int(year), 'nzjday': int(doy), 'nzhour': int(sthr), 'nzmin': int(stmin),
              'nzsec': int(stsec), 'nzmsec': int(0), 'delta': float(samprate)}
 
     sacn = SACTrace(data=nv, **headN)
-    sacn.write('output/' + site.upper() + '.vel.n')
-    print('Writing SAC file ' + 'output/' + site + '.LXE.sac')
+    sacn.write('output/sacfilt/'+event+'/'+ event + '.' + site.upper() + '.' + sr + '.filt.LXN.sac')
+    sacn = SACTrace(data=nunf, **headN)
+    sacn.write('output/sac/'+event+'/' + event + '.' + site.upper() + '.' + sr + '.LXN.sac')
+    print('Writing SAC file ' + 'output/' + event + '.' + site + '.' + sr + '.LXE.sac')
 
     headE = {'kstnm': site, 'kcmpnm': 'LXE', 'stla': float(stalat),'stlo': float(stalon),
          'nzyear': int(year), 'nzjday': int(doy), 'nzhour': int(sthr), 'nzmin': int(stmin),
          'nzsec': int(stsec), 'nzmsec': int(0), 'delta': float(samprate)}
     sace = SACTrace(data=ev, **headE)
-    sace.write('output/' + site.upper() + '.vel.e')
-    print('Writing SAC file ' + 'output/' + site + '.LXZ.sac')
+    sace.write('output/sacfilt/'+event+'/' + event + '.' + site.upper() + '.' + sr + '.filt.LXE.sac')
+    sace = SACTrace(data=eunf, **headE)
+    sace.write('output/sac/'+event+'/' + event + '.' + site.upper() + '.' + sr + '.LXE.sac')
+
+    print('Writing SAC file ' + 'output/' + event + '.' + site + '.' + sr + '.LXZ.sac')
 
     headZ = {'kstnm': site, 'kcmpnm': 'LXZ', 'stla': float(stalat),'stlo': float(stalon),
              'nzyear': int(year), 'nzjday': int(doy), 'nzhour': int(sthr), 'nzmin': int(stmin),
              'nzsec': int(stsec), 'nzmsec': int(0), 'delta': float(samprate)}
     sacu = SACTrace(data=uv, **headZ)
-    sacu.write('output/' + site.upper() + '.vel.u')
+    sacu.write('output/sacfilt/'+event+'/' + event + '.' + site.upper() + '.' + sr + '.filt.LXZ.sac')
+    sacu = SACTrace(data=uunf, **headZ)
+    sacu.write('output/sac/'+event+'/' + event + '.' + site.upper() + '.' + sr + '.LXZ.sac')
+
+
+def plotvelocities(event,site,t,n,e,v):
+    fname = 'output/fig/'+event+'/'+event+'_'+site+'.png'
+    ax1 = plt.subplot(311)
+    plt.plot(t,n)
+    plt.title(event+' '+site)
+    plt.ylabel('North (cm/s)')
+    ax2 = plt.subplot(312)
+    plt.plot(t,e)
+    plt.ylabel('East (cm/s)')
+    ax3 = plt.subplot(313)
+    plt.plot(t,v)
+    plt.xlabel('Seconds after OT')
+    plt.ylabel('Vertical (cm/s)')
+    plt.savefig(fname)
+    plt.clf()
+    plt.close()
+    return
+
+def getpeakvals(velfile,site,samprate,event):
+    a = numpy.loadtxt(velfile)
+    tind = a[:,0]
+    gtime = a[:,1]
+    nunf = a[:,2]-numpy.nanmean(a[:,2])
+    eunf = a[:,3]-numpy.nanmean(a[:,3])
+    uunf = a[:,4]-numpy.nanmean(a[:,4])
+    bf, af = butter(4, 1.25/0.5*0.2,btype='low')
+    nv = filtfilt(bf,af,nunf)
+    ev = filtfilt(bf,af,eunf)
+    uv = filtfilt(bf,af,uunf)
+    peakn = numpy.amax(numpy.absolute(nv))*100
+    peake = numpy.amax(numpy.absolute(ev))*100
+    peaku = numpy.amax(numpy.absolute(uv))*100
+    print (peakn,peake,peaku)
+    return(peakn,peake,peaku)
+
+#getpeakvals('output/velocities_mom0_111_2022.txt','mom0',0.2,'masachapa')
+
+#writesac('output/velocities_boar_130_2012.txt','boar','35','-120','130','2012',30,'pig')
